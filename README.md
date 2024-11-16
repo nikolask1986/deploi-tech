@@ -48,8 +48,8 @@ The system's scalability is supported by stateless authentication, efficient dat
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/nikolask1986/deploi-tech
+cd deploi-tech
 ```
 
 2. Create a `.env` file in the root directory:
