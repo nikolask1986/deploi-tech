@@ -6,6 +6,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Role } from '../enums/role.enum';
+import { Tier } from '../enums/tier.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -21,4 +22,8 @@ export class CreateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
+
+  @IsEnum(Tier)
+  @IsOptional()
+  tier?: Tier;
 }

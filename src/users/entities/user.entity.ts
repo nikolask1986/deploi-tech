@@ -9,6 +9,7 @@ import {
 import { Exclude } from 'class-transformer';
 import { Role } from '../enums/role.enum';
 import { Product } from '../../products/entities/product.entity';
+import { Tier } from '../enums/tier.enum';
 
 @Entity()
 export class User {
@@ -37,6 +38,13 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({
+    type: 'enum',
+    enum: Tier,
+    default: Tier.FREE,
+  })
+  tier: Tier;
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
