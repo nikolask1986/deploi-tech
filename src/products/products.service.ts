@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThanOrEqual } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entities/product.entity';
 import { User } from '../users/entities/user.entity';
@@ -29,6 +29,25 @@ export class ProductsService {
     });
   }
 
+  /**
+   * Retrieves products based on user's role and tier level
+   *
+   * Authorization rules:
+   * 1. Admins can see all products in the system
+   * 2. Regular users can see:
+   *    - All products they created (regardless of tier)
+   *    - Any products with a minimumTier less than or equal to their current tier
+   *
+   * Example tier access:
+   * - FREE tier: sees only FREE tier products
+   * - BASIC tier: sees FREE and BASIC tier products
+   * - PREMIUM tier: sees FREE, BASIC, and PREMIUM tier products
+   * - ENTERPRISE tier: sees all tier products
+   * - ADMIN role: sees all products regardless of tier
+   *
+   * @param user - The authenticated user requesting products
+   * @returns Promise<Product[]> Array of accessible products
+   */
   async findAll(user: User) {
     if (user.role === Role.ADMIN) {
       return this.productsRepository.find({
@@ -37,7 +56,10 @@ export class ProductsService {
     }
 
     return this.productsRepository.find({
-      where: { user: { id: user.id } },
+      where: [
+        { user: { id: user.id } },
+        { minimumTier: LessThanOrEqual(user.tier) },
+      ],
       relations: ['user'],
     });
   }
