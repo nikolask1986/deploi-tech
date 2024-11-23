@@ -18,11 +18,15 @@ export class ProductsService {
   ) {}
 
   create(createProductDto: CreateProductDto, user: User) {
-    const product = this.productsRepository.create({
+    if (!user.tier) {
+      throw new Error('User tier is undefined');
+    }
+
+    return this.productsRepository.save({
       ...createProductDto,
+      minimumTier: user.tier,
       user,
     });
-    return this.productsRepository.save(product);
   }
 
   async findAll(user: User) {

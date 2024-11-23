@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { ProductTier } from '../enums/product-tier.enum';
+import { Tier } from '../../common/enums/tier.enum';
 
 @Entity()
 export class Product {
@@ -22,10 +22,10 @@ export class Product {
 
   @Column({
     type: 'enum',
-    enum: ProductTier,
-    default: ProductTier.FREE,
+    enum: Tier,
+    default: Tier.FREE,
   })
-  minimumTier: ProductTier;
+  minimumTier: Tier;
 
   @ManyToOne(() => User, (user) => user.products)
   user: User;

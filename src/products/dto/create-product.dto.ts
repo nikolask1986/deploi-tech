@@ -5,7 +5,7 @@ import {
   IsEnum,
   IsOptional,
 } from 'class-validator';
-import { ProductTier } from '../enums/product-tier.enum';
+import { Tier } from '../../common/enums/tier.enum';
 
 export class CreateProductDto {
   @IsString()
@@ -18,7 +18,7 @@ export class CreateProductDto {
   @MinLength(10)
   description: string;
 
-  @IsEnum(ProductTier)
+  @IsEnum(Tier)
   @IsOptional()
-  minimumTier?: ProductTier = ProductTier.FREE;
+  minimumTier?: Tier = Tier.FREE;
 }
