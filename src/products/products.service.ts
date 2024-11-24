@@ -9,6 +9,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../users/enums/role.enum';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -79,5 +80,44 @@ export class ProductsService {
     }
 
     return product;
+  }
+
+  /**
+   * Updates a product if the user has permission
+   *
+   * Authorization rules:
+   * 1. Admins can update any product
+   * 2. Regular users can only update:
+   *    - Products they created
+   *    - Cannot upgrade product to a tier higher than their own
+   *
+   * @param id - The ID of the product to update
+   * @param updateProductDto - The new product data
+   * @param user - The authenticated user requesting the update
+   * @returns Promise<Product> Updated product
+   * @throws NotFoundException if product doesn't exist
+   * @throws ForbiddenException if user doesn't have permission
+   */
+  async update(id: number, updateProductDto: UpdateProductDto, user: User) {
+    const product = await this.findOne(id, user);
+
+    // Check if user is trying to set a tier higher than their own
+    if (
+      updateProductDto.minimumTier &&
+      !user.role.includes(Role.ADMIN) &&
+      updateProductDto.minimumTier > user.tier
+    ) {
+      throw new ForbiddenException(
+        'Cannot set product tier higher than your own tier',
+      );
+    }
+
+    // Update the product
+    const updatedProduct = {
+      ...product,
+      ...updateProductDto,
+    };
+
+    return this.productsRepository.save(updatedProduct);
   }
 }
