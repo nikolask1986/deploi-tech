@@ -10,6 +10,18 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  /**
+   * Validates user credentials against the database
+   *
+   * Process:
+   * 1. Finds user by username
+   * 2. Compares provided password with stored hash
+   * 3. Returns user data without password if valid
+   *
+   * @param username - The username to validate
+   * @param password - The password to validate
+   * @returns The user object without password if valid, null otherwise
+   */
   async validateUser(username: string, password: string) {
     const user = await this.usersService.findByUsername(username);
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -19,6 +31,22 @@ export class AuthService {
     return null;
   }
 
+  /**
+   * Authenticates a user and generates a JWT token
+   *
+   * Process:
+   * 1. Validates user credentials
+   * 2. If valid, generates a JWT token containing:
+   *    - username
+   *    - user ID (as 'sub')
+   *    - user role
+   * 3. Returns token and user data
+   *
+   * @param username - The username to authenticate
+   * @param password - The password to authenticate
+   * @returns Object containing access token and user data
+   * @throws UnauthorizedException if credentials are invalid
+   */
   async login(username: string, password: string) {
     const user = await this.validateUser(username, password);
     if (!user) {

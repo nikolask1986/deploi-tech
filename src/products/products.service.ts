@@ -18,6 +18,25 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
   ) {}
 
+  /**
+   * Creates a new product for the authenticated user
+   *
+   * Business rules:
+   * 1. User must have a valid tier
+   * 2. Product's minimum tier is automatically set to the user's current tier
+   * 3. Product is automatically associated with the creating user
+   *
+   * Example:
+   * - If a PREMIUM tier user creates a product, it will be accessible to:
+   *   - PREMIUM tier users
+   *   - ENTERPRISE tier users
+   *   - ADMIN users (regardless of tier)
+   *
+   * @param createProductDto - The product data (name, description)
+   * @param user - The authenticated user creating the product
+   * @returns Promise<Product> The created product
+   * @throws Error if user tier is undefined
+   */
   create(createProductDto: CreateProductDto, user: User) {
     if (!user.tier) {
       throw new Error('User tier is undefined');

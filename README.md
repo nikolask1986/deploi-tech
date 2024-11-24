@@ -28,7 +28,6 @@ A NestJS application with user authentication, product management, and PostgreSQ
 
 The application follows key architectural principles focused on scalability and maintainability through a modular design pattern. It leverages Domain-Driven Design by separating features into independent modules (Users, Products, Auth), implements the Repository Pattern for database abstraction, and uses Dependency Injection for loose coupling. Security is handled through JWT authentication, role-based authorization, and bcrypt password hashing with salt rounds for secure password storage, while Docker containerization ensures consistent deployment environments.
 
-
 The system's scalability is supported by stateless authentication, efficient database design with TypeORM, and environment-based configuration management. Data integrity and validation are maintained through DTOs and TypeScript type safety, while error handling is standardized across the application. Password security is enhanced by automatically hashing passwords before storage and comparing hashed values during authentication, ensuring that plain-text passwords are never stored or transmitted. This architecture allows for easy horizontal scaling, simplified testing, and the future addition of features like caching, monitoring, and API documentation without significant restructuring.
 
 ## Features
@@ -47,12 +46,14 @@ The system's scalability is supported by stateless authentication, efficient dat
 ## Environment Setup
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/nikolask1986/deploi-tech
 cd deploi-tech
 ```
 
 2. Create a `.env` file in the root directory:
+
 ```bash
 JWT_SECRET=your-secret-key-here
 PORT=3000
@@ -61,16 +62,19 @@ PORT=3000
 ## Running with Docker
 
 1. Build and start the containers:
+
 ```bash
 docker-compose up
 ```
 
 2. Check the logs:
+
 ```bash
 docker-compose logs -f api
 ```
 
 3. Stop the containers:
+
 ```bash
 docker-compose down
 ```
@@ -78,17 +82,61 @@ docker-compose down
 ## API Endpoints
 
 ### Authentication
-- POST /auth/login - Login user
+
+- POST /auth/login - Login user and get JWT token
+  - Body: { username, password }
+  - Returns: { access_token, user }
+
+### Users
+
 - POST /users - Create new user
+  - Body: { username, password, role?, tier? }
+  - Public endpoint
 - GET /users - Get all users (admin only)
-- GET /users/:id - Get user by ID
+  - Requires: Admin role
+- GET /users/:id - Get user by ID (admin only)
+  - Requires: Admin role
+- PATCH /users/:id - Update user (admin only)
+  - Requires: Admin role
+  - Body: { username?, password?, role?, tier? }
 
 ### Products
-- GET /products - Get all products (user: own products, admin: all products)
-- POST /products - Create a new product
-- GET /products/:id - Get product by ID
 
-A postman collection is included in the root directory called `deploi-tech-test.json`.
+- GET /products - Get products based on user's role and tier
+  - Admin: sees all products
+  - Users: see their own products and products matching their tier level
+- POST /products - Create a new product
+  - Body: { name, description, minimumTier? }
+  - Product's tier is automatically set to creator's tier
+- GET /products/:id - Get product by ID
+  - Admin: can access any product
+  - Users: can only access their own products
+- PATCH /products/:id - Update product
+  - Admin: can update any product
+  - Users: can only update their own products
+  - Cannot set tier higher than user's own tier
+  - Body: { name?, description?, minimumTier? }
+
+### Tier System
+
+The application implements a tier-based access system:
+
+- FREE
+- BASIC
+- PREMIUM
+- ENTERPRISE
+
+Users can only:
+
+- Create products at their tier level
+- View products at or below their tier level
+- Update their own products
+- Cannot set product tiers higher than their own
+
+Admins have full access to all products regardless of tier.
+
+A Postman collection is included in the root directory: `deploi-tech-test.json`.
+
 ## Local Development
 
 ```bash
@@ -112,6 +160,7 @@ Basic unit testing is implemented for the Users module. To run the tests, use th
 ## Database
 
 The application uses PostgreSQL as its database. When running with Docker, the database is automatically set up with the following default credentials:
+
 - Host: postgres
 - Port: 5432
 - Username: postgres

@@ -17,6 +17,19 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
+  /**
+   * Creates a new user with a hashed password
+   *
+   * Process:
+   * 1. Checks for username uniqueness
+   * 2. Hashes the password
+   * 3. Creates and saves the user
+   * 4. Returns user data without password
+   *
+   * @param createUserDto - User creation data (username, password, optional role and tier)
+   * @returns Promise with user data (excluding password)
+   * @throws ConflictException if username already exists
+   */
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.findByUsername(createUserDto.username);
     if (existingUser) {
@@ -34,14 +47,38 @@ export class UsersService {
     return result;
   }
 
+  /**
+   * Finds a user by their username
+   *
+   * Used primarily for:
+   * - Authentication
+   * - Username uniqueness validation
+   *
+   * @param username - The username to search for
+   * @returns Promise<User | null> The found user or null
+   */
   async findByUsername(username: string) {
     return this.usersRepository.findOne({ where: { username } });
   }
 
+  /**
+   * Retrieves all users in the system
+   *
+   * Note: This should typically be restricted to admin access
+   *
+   * @returns Promise<User[]> Array of all users
+   */
   findAll() {
     return this.usersRepository.find();
   }
 
+  /**
+   * Finds a user by their ID
+   *
+   * @param id - The user ID to search for
+   * @returns Promise<User> The found user
+   * @throws NotFoundException if user doesn't exist
+   */
   async findOne(id: number) {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
@@ -50,6 +87,22 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Updates a user's information
+   *
+   * Process:
+   * 1. Verifies user exists
+   * 2. If username is being changed, checks for uniqueness
+   * 3. If password is being changed, hashes the new password
+   * 4. Updates and saves the user
+   * 5. Returns updated user data without password
+   *
+   * @param id - The ID of the user to update
+   * @param updateUserDto - The new user data
+   * @returns Promise with updated user data (excluding password)
+   * @throws NotFoundException if user doesn't exist
+   * @throws ConflictException if new username already exists
+   */
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findOne(id);
 
